@@ -3,6 +3,9 @@ from logging import getLogger
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 # Third Party Library
 from slack_bolt.context.say.say import Say
@@ -37,7 +40,7 @@ class TimesCallback(SlackCallbackBase):
 
         logger.info(f"{event=}")
 
-        if subtype is None:
+        if subtype is None or subtype == "bot_message":
             self.message_event_none(event, message, say)
         else:
             logger.warning(f"event_message's subtype is not None: {subtype=}")
@@ -49,6 +52,7 @@ class TimesCallback(SlackCallbackBase):
         message_txt: str = ""
         if (txt := message.get("text", None)) is not None:
             message_txt += txt
+        attachments: Optional[Sequence[Union[Dict]]] = message.get("attachments", None)
 
         client_model: SlackClientAppModel
         for client_model in self.slack_clients:
@@ -56,6 +60,7 @@ class TimesCallback(SlackCallbackBase):
                 channel=client_model.tgt_channel_id,
                 text=message_txt,
                 # as_user=False,
+                attachments=attachments,
                 username="pollenJP",
                 icon_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
             )

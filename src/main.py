@@ -30,21 +30,21 @@ conf = OmegaConf.load(Path(__file__).parents[1] / "config" / "main.yaml")
 
 
 times_app_host = App(token=conf.times_app.host.bot_user_oauth_token)
-times_app_clients: List[SlackClientAppModel] = [
-    SlackClientAppModel(
-        app=App(token=client_conf.bot_user_oauth_token),
-        tgt_channel_id=client_conf.channel_id,
-    )
-    for client_conf in conf.times_app.clients.slack
-]
 
 callbacks: Callbacks = Callbacks(
     [
         TimesCallback(
-            src_channel_id=conf.times_app.host.channel_id,
-            tgt_clients=times_app_clients,
+            src_channel_id=channels_conf.host_channel_id,
+            tgt_clients=[
+                SlackClientAppModel(
+                    app=App(token=slack_clients_conf.bot_user_oauth_token),
+                    tgt_channel_id=slack_clients_conf.channel_id,
+                )
+                for slack_clients_conf in channels_conf.clients.slack
+            ],
             slack_app=times_app_host,
-        ),
+        )
+        for channels_conf in conf.times_app.channels
     ]
 )
 
