@@ -4,9 +4,9 @@ from logging.config import dictConfig
 from pathlib import Path
 from typing import Any
 from typing import Dict
-from typing import List
 
 # Third Party Library
+import discord
 import yaml
 from omegaconf import OmegaConf
 from slack_bolt.adapter.socket_mode.builtin import SocketModeHandler
@@ -41,6 +41,10 @@ callbacks: Callbacks = Callbacks(
                     tgt_channel_id=slack_clients_conf.channel_id,
                 )
                 for slack_clients_conf in channels_conf.clients.slack
+            ],
+            discord_webhook_clients=[
+                discord.webhook.sync.SyncWebhook.from_url(discord_webhook_url)
+                for discord_webhook_url in channels_conf.clients.discord
             ],
             slack_app=times_app_host,
         )
