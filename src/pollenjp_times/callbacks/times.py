@@ -8,10 +8,12 @@ from typing import Sequence
 from typing import Union
 
 # Third Party Library
+import discord
 from slack_bolt.context.say.say import Say
 
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
+from pollenjp_times.utils import extract_slack_urls
 
 # Local Library
 from .base import SlackCallbackBase
@@ -25,11 +27,13 @@ class TimesCallback(SlackCallbackBase):
         *args: Any,
         src_channel_id: str,
         tgt_clients: List[SlackClientAppModel],
+        discord_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.src_channel_id: str = src_channel_id
         self.slack_clients: List[SlackClientAppModel] = tgt_clients
+        self.discord_webhook_clients: List[discord.webhook.sync.SyncWebhook] = discord_webhook_clients or []
 
     def event_message(self, **kwargs: Any) -> None:
         event: Dict[str, Any] = kwargs["event"]
@@ -63,4 +67,28 @@ class TimesCallback(SlackCallbackBase):
                 attachments=attachments,
                 username="pollenJP",
                 icon_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
+            )
+
+        # replace code block
+        # slack format
+        #   ```def function():\n    pass```
+        # discord format
+        #   ```\ndef function():\n    pass\n```
+        message_txt = message_txt.replace("```", "\n```\n```\n")
+
+        content_list: List[str] = [
+            r"```",
+            f"{message_txt}",
+            r"```",
+        ]
+        content_list += extract_slack_urls(text=message_txt)
+
+        logger.info(f"{content_list}")
+
+        discord_webhook_app: discord.webhook.sync.SyncWebhook
+        for discord_webhook_app in self.discord_webhook_clients:
+            discord_webhook_app.send(
+                content="\n".join(content_list),
+                username="pollenJP",
+                avatar_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
             )
