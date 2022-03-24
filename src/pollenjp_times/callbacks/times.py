@@ -76,6 +76,11 @@ class TimesCallback(SlackCallbackBase):
         #   ```\ndef function():\n    pass\n```
         message_txt = message_txt.replace("```", "\n```\n```\n")
 
+        # replace escape characters
+        message_txt = message_txt.replace("&amp", "&")
+        message_txt = message_txt.replace("&lt;", "<")
+        message_txt = message_txt.replace("&gt;", ">")
+
         content_list: List[str] = [
             r"```",
             f"{message_txt}",
