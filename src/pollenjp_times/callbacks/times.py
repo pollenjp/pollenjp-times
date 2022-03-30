@@ -14,7 +14,6 @@ from slack_bolt.context.say.say import Say
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
 from pollenjp_times.utils import convert_slack_urls_to_discord
-from pollenjp_times.utils import extract_slack_urls
 
 # Local Library
 from .base import SlackCallbackBase
@@ -57,7 +56,7 @@ class TimesCallback(SlackCallbackBase):
         message_txt: str = ""
         if (txt := message.get("text", None)) is not None:
             message_txt += txt
-        attachments: Optional[Sequence[Union[Dict]]] = message.get("attachments", None)
+        attachments: Optional[Sequence[Union[Dict[str, Any]]]] = message.get("attachments", None)
 
         client_model: SlackClientAppModel
         for client_model in self.slack_clients:

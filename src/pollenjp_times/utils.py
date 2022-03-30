@@ -23,13 +23,15 @@ def extract_slack_urls(text: str) -> List[str]:
     return urls
 
 
-def convert_slack_urls_to_discord(text: str) -> List[str]:
+def convert_slack_urls_to_discord(text: str) -> str:
     """
     extract urls from slack message text
 
     example:
-        Input: "<@U123456>はー\n<#hoge-ch|C123456>ひー\nふー\n<https://example.com>へー\n<https://example.com|https://example.com>"
-        Output: "`@ U123456`\n`#hoge-ch`\nへー\n https://example.com \n https://example.com "
+        Input:
+            "<@U123456>はー\n<#hoge-ch|C123456>ひー\nふー\n<https://example.com>へー\n<https://example.com|https://example.com>"
+        Output:
+            "`@ U123456`\n`#hoge-ch`\nへー\n https://example.com \n https://example.com "
     """
 
     text = re.sub(r"<@(\S+?)>", r"`@ \1`", text)

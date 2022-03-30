@@ -331,7 +331,6 @@ description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
 python-versions = ">=3.8.0"
-develop = false
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<3.9.0"
@@ -340,12 +339,6 @@ aiohttp = ">=3.6.0,<3.9.0"
 docs = ["sphinx (==4.4.0)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport", "myst-parser"]
 speed = ["orjson (>=3.5.4)", "aiodns (>=1.1)", "brotlipy", "cchardet"]
 voice = ["PyNaCl (>=1.3.0,<1.6)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/Pycord-Development/pycord.git"
-reference = "v2.0.0-beta.5"
-resolved_reference = "e69b7d4c0130c95323f5f0dd504a6be8276941c9"
 
 [[package]]
 name = "pycodestyle"
@@ -513,7 +506,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "89562e1a8ab8732989a70f0c8be213ce4d7f6fb8ca55b937451675ea4ae2075e"
+content-hash = "7dbc4d9757b184de8b6551ddf935c05654677d393872bf672a99b01bdcacf5de"
 
 [metadata.files]
 aiohttp = [
@@ -762,7 +755,10 @@ py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
     {file = "py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719"},
 ]
-py-cord = []
+py-cord = [
+    {file = "py-cord-2.0.0b5.tar.gz", hash = "sha256:bf58363d3bade00273113b2e8ecf4eca07f6d57a8836e0882275760055b3ecc6"},
+    {file = "py_cord-2.0.0b5-py3-none-any.whl", hash = "sha256:0d28dcc69be6e7f94ea5094fd37e2083fa1fa37e9cb4800c05c13732510c1282"},
+]
 pycodestyle = [
     {file = "pycodestyle-2.8.0-py2.py3-none-any.whl", hash = "sha256:720f8b39dde8b293825e7ff02c475f3077124006db4f440dcbc9a20b76548a20"},
     {file = "pycodestyle-2.8.0.tar.gz", hash = "sha256:eddd5847ef438ea1c7870ca7eb78a9d47ce0cdb4851a5523949f2601d0cbbe7f"},
