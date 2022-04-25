@@ -57,6 +57,27 @@ class TimesCallback(SlackCallbackBase):
             self.slack_app.client.chat_postEphemeral(
                 channel=self.src_channel_id,
                 text="test message for postEphemeral",
+                blocks=[
+                    {
+                        "type": "actions",
+                        "block_id": "actionblock789",
+                        "elements": [
+                            {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "Send"},
+                                "style": "primary",
+                                "value": "click_me_123",
+                                "action_id": "button",
+                            },
+                            {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "Decline"},
+                                "value": "click_me_456",
+                                "action_id": "button2",
+                            },
+                        ],
+                    }
+                ],
                 user=event["user"],
             )
 
