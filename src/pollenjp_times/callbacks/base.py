@@ -13,6 +13,7 @@ logger = getLogger(__name__)
 class SlackCallbackBase:
     def __init__(self, *args: Any, slack_app: App, **kwargs: Any) -> None:
         self.slack_app: App = slack_app
+        self.bot_id: str = self.slack_app.client.auth_test()["user_id"]
 
 
 class Callbacks:

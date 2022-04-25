@@ -53,6 +53,13 @@ class TimesCallback(SlackCallbackBase):
         if event["channel"] != self.src_channel_id:
             return
 
+        if message.get("subtype") is None:  # if a person not a bot
+            self.slack_app.client.chat_postEphemeral(
+                channel=self.src_channel_id,
+                text="test message for postEphemeral",
+                user=event["user"],
+            )
+
         message_txt: str = ""
         if (txt := message.get("text", None)) is not None:
             message_txt += txt
