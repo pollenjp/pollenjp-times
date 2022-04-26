@@ -89,16 +89,17 @@ def main():
         ]
     )
 
-    @times_app_host.action("transfer_button_send")
-    def transfer_button_send(ack, body):
+    @times_app_host.action("action_transfer_send_button")
+    def action_transfer_send_button(ack, body):
         ack()
         logger.info(f"{body=}")
         # TODO: send to all times
+        callbacks.action_transfer_send_button(body=body)
         client: WebhookClient = WebhookClient(url=body["response_url"])
         client.send(delete_original=True)
 
-    @times_app_host.action("transfer_button_delete")
-    def transfer_button_delete(ack, body):
+    @times_app_host.action("action_delete_original")
+    def action_delete_original(ack, body):
         ack()
         logger.info(f"{body=}")
         client: WebhookClient = WebhookClient(url=body["response_url"])

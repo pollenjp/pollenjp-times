@@ -11,6 +11,8 @@ from slack_bolt.context.say.say import Say
 
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
+from pollenjp_times.utils.slack import convert_slack_urls_to_discord
+from pollenjp_times.utils.slack import get_a_conversation
 
 # Local Library
 from .base import SlackCallbackBase
@@ -69,17 +71,60 @@ class TimesCallback(SlackCallbackBase):
                             "text": {"type": "plain_text", "text": "Send"},
                             "style": "primary",
                             "value": f"{self.src_channel_id}/{message_ts}",  # '/' is separater
-                            "action_id": "transfer_button_send",
+                            "action_id": "action_transfer_send_button",
                         },
                         {
                             "type": "button",
                             "text": {"type": "plain_text", "text": "No"},
                             "style": "danger",
                             "value": "delete",
-                            "action_id": "transfer_button_delete",
+                            "action_id": "action_delete_original",
                         },
                     ],
                 }
             ],
             user=event["user"],
         )
+
+    def action_transfer_send_button(self, body: Dict[str, Any]) -> None:
+        channel_id: str
+        message_ts: str
+        channel_id, message_ts = body["actions"][0]["value"].split("/")
+        message: Dict[str, Any] = get_a_conversation(app=self.slack_app, channel_id=channel_id, ts=message_ts)
+        logger.info(f"{message=}")
+
+        message_txt: str = ""
+        if (txt := message.get("text", None)) is not None:
+            message_txt += txt
+
+        client_model: SlackClientAppModel
+        for client_model in self.slack_clients:
+            client_model.app.client.chat_postMessage(
+                channel=client_model.tgt_channel_id,
+                text=message_txt,
+                # as_user=False,
+                # attachments=message.get("attachments", None),
+                username="pollenJP",
+                icon_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
+            )
+
+        # replace escape characters
+        message_txt = message_txt.replace("&amp", "&")
+        message_txt = message_txt.replace("&lt;", "<")
+        message_txt = message_txt.replace("&gt;", ">")
+
+        content_list: List[str] = [
+            f"{convert_slack_urls_to_discord(message_txt)}",
+        ]
+
+        logger.info(f"{content_list}")
+
+        discord_webhook_app: discord.webhook.sync.SyncWebhook
+        for discord_webhook_app in self.discord_webhook_clients:
+            discord_webhook_app.send(
+                content="\n".join(content_list),
+                username="pollenJP",
+                avatar_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
+            )
+
+        return

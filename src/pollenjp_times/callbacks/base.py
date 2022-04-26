@@ -52,3 +52,6 @@ class Callbacks:
 
     def event_reaction_removed(self, **kwargs: Dict[str, Any]) -> None:
         self._notify("event_reaction_removed", **kwargs)
+
+    def action_transfer_send_button(self, **kwargs: Dict[str, Any]) -> None:
+        self._notify("action_transfer_send_button", **kwargs)
