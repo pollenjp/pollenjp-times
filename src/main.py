@@ -12,6 +12,7 @@ from omegaconf import OmegaConf
 from slack_bolt.adapter.socket_mode.builtin import SocketModeHandler
 from slack_bolt.app.app import App
 from slack_bolt.context.say.say import Say
+from slack_sdk import WebhookClient
 
 # First Party Library
 from pollenjp_times.callbacks.base import Callbacks
@@ -53,9 +54,25 @@ callbacks: Callbacks = Callbacks(
 )
 
 
+@times_app_host.action("transfer_button_send")
+def transfer_button_send(ack, body):
+    ack()
+    logger.info(f"{body=}")
+    # TODO: send to all times
+    client: WebhookClient = WebhookClient(url=body["response_url"])
+    client.send(delete_original=True)
+
+
+@times_app_host.action("transfer_button_delete")
+def transfer_button_delete(ack, body):
+    ack()
+    logger.info(f"{body=}")
+    client: WebhookClient = WebhookClient(url=body["response_url"])
+    client.send(delete_original=True)
+
+
 @times_app_host.event("message")
 def event_message(event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
-    print("hello")
     callbacks.event_message(
         event=event,
         message=message,

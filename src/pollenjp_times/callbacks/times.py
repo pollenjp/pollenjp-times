@@ -44,7 +44,7 @@ class TimesCallback(SlackCallbackBase):
 
         logger.info(f"{event=}")
 
-        if subtype is None or subtype == "bot_message":
+        if subtype is None:  # if a person
             self.message_event_none(event, message, say)
         else:
             logger.warning(f"event_message's subtype is not None: {subtype=}")
@@ -53,65 +53,34 @@ class TimesCallback(SlackCallbackBase):
         if event["channel"] != self.src_channel_id:
             return
 
-        if message.get("subtype") is None:  # if a person not a bot
-            self.slack_app.client.chat_postEphemeral(
-                channel=self.src_channel_id,
-                text="test message for postEphemeral",
-                blocks=[
-                    {
-                        "type": "actions",
-                        "block_id": "actionblock789",
-                        "elements": [
-                            {
-                                "type": "button",
-                                "text": {"type": "plain_text", "text": "Send"},
-                                "style": "primary",
-                                "value": "click_me_123",
-                                "action_id": "button",
-                            },
-                            {
-                                "type": "button",
-                                "text": {"type": "plain_text", "text": "Decline"},
-                                "value": "click_me_456",
-                                "action_id": "button2",
-                            },
-                        ],
-                    }
-                ],
-                user=event["user"],
-            )
+        message_ts: Optional[str] = message.get("ts")
+        if message_ts is None:
+            raise RuntimeError(f"message_ts is not found: {message=}")
 
-        message_txt: str = ""
-        if (txt := message.get("text", None)) is not None:
-            message_txt += txt
-        attachments: Optional[Sequence[Union[Dict[str, Any]]]] = message.get("attachments", None)
-
-        client_model: SlackClientAppModel
-        for client_model in self.slack_clients:
-            client_model.app.client.chat_postMessage(
-                channel=client_model.tgt_channel_id,
-                text=message_txt,
-                # as_user=False,
-                attachments=attachments,
-                username="pollenJP",
-                icon_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
-            )
-
-        # replace escape characters
-        message_txt = message_txt.replace("&amp", "&")
-        message_txt = message_txt.replace("&lt;", "<")
-        message_txt = message_txt.replace("&gt;", ">")
-
-        content_list: List[str] = [
-            f"{convert_slack_urls_to_discord(message_txt)}",
-        ]
-
-        logger.info(f"{content_list}")
-
-        discord_webhook_app: discord.webhook.sync.SyncWebhook
-        for discord_webhook_app in self.discord_webhook_clients:
-            discord_webhook_app.send(
-                content="\n".join(content_list),
-                username="pollenJP",
-                avatar_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
-            )
+        self.slack_app.client.chat_postEphemeral(
+            channel=self.src_channel_id,
+            text="test message for postEphemeral",
+            blocks=[
+                {
+                    "type": "actions",
+                    "block_id": "actionblock789",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "Send"},
+                            "style": "primary",
+                            "value": f"{self.src_channel_id}/{message_ts}",  # '/' is separater
+                            "action_id": "transfer_button_send",
+                        },
+                        {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "No"},
+                            "style": "danger",
+                            "value": "delete",
+                            "action_id": "transfer_button_delete",
+                        },
+                    ],
+                }
+            ],
+            user=event["user"],
+        )
