@@ -106,6 +106,7 @@ def main():
 
     @times_app_host.event("message")
     def event_message(event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
+        logger.info(f"{event=}")
         callbacks.event_message(
             event=event,
             message=message,
