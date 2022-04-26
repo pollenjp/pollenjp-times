@@ -13,7 +13,7 @@ from slack_bolt.context.say.say import Say
 
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
-from pollenjp_times.utils import convert_slack_urls_to_discord
+from pollenjp_times.utils.slack import convert_slack_urls_to_discord
 
 # Local Library
 from .base import SlackCallbackBase
@@ -39,9 +39,6 @@ class TwitterCallback(SlackCallbackBase):
         if event["channel"] != self.src_channel_id:
             return
 
-        message_ts: Optional[str] = message.get("ts")
-        if message_ts is None:
-            raise RuntimeError(f"message_ts is not found: {message=}")
         message_txt: str = ""
         if (txt := message.get("text", None)) is not None:
             message_txt += txt
