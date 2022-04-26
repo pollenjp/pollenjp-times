@@ -2,34 +2,36 @@
 
 ## config
 
-`config/main.yaml`
+See `config/sample.yaml`
 
-```yaml
-times_app:
-  host:  # slack
-    bot_user_oauth_token: "xoxb-***"
-    app_level_token: "xapp-***"
-  channels:
-    -
-      host_channel_id: "CXXX"  # times
-      clients:
-        slack:
-          -  # Hoge workspace
-            bot_user_oauth_token: "xoxb-***"
-            channel_id: "CXXX"  # random
-          -  # Fuga workspace
-            bot_user_oauth_token: "xoxb-***"
-            channel_id: "CXXX"
-        discord: []
-    -
-      host_channel_id: "CYYY"  # times2
-      clients:
-        slack:
-          -  # Hoge workspace
-            bot_user_oauth_token: "xoxb-***"
-            channel_id: "CXXX"  # random
-          -  # Fuga workspace
-            bot_user_oauth_token: "xoxb-***"
-            channel_id: "CXXX"
-        discord: []
+## systemd
+
+```sh
+poetry run python3 generate_systemd_conf.py \
+    --name pollenjp_times_bot \
+    --config config/sample.yaml
+```
+
+### times
+
+- Create `config/times.yaml`.
+- Run the command as below.
+
+```sh
+poetry run python3 generate_systemd_conf.py \
+    --name pollenjp_times_bot_times \
+    --config config/times.yaml
+systemctl --user start pollenjp_times_bot_times.service
+```
+
+### twitter
+
+- Create `config/twitter.yaml`.
+- Run the command as below.
+
+```sh
+poetry run python3 generate_systemd_conf.py \
+    --name pollenjp_times_bot_twitter \
+    --config config/twitter.yaml
+systemctl --user start pollenjp_times_bot_twitter.service
 ```

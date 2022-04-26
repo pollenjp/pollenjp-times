@@ -13,6 +13,7 @@ logger = getLogger(__name__)
 class SlackCallbackBase:
     def __init__(self, *args: Any, slack_app: App, **kwargs: Any) -> None:
         self.slack_app: App = slack_app
+        self.bot_id: str = self.slack_app.client.auth_test()["user_id"]
 
 
 class Callbacks:
@@ -51,3 +52,6 @@ class Callbacks:
 
     def event_reaction_removed(self, **kwargs: Dict[str, Any]) -> None:
         self._notify("event_reaction_removed", **kwargs)
+
+    def action_transfer_send_button(self, **kwargs: Dict[str, Any]) -> None:
+        self._notify("action_transfer_send_button", **kwargs)
