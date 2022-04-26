@@ -23,16 +23,15 @@ def main():
     args = parse_args()
     config_filename: str = f"{args.name}.service"
     python_path: Path = Path(__file__).parent / "src" / "main.py"
-    shell_file_path: Path = Path(__file__).parent / "exe" / f"{args.name}.sh"
+    systemd_env_file_path: Path = Path(__file__).parent / "systemd_env" / f"{args.name}.env"
     target_systemd_conf_path: Path = Path("~").expanduser() / ".config" / "systemd" / "user" / config_filename
 
     # shell script
 
-    shell_file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(shell_file_path, "wt") as f:
-        f.write("#!/bin/bash\n")
-        f.write(f'{sys.executable} "{python_path.resolve()}" --config "{args.config}"')
-    os.chmod(shell_file_path, 0o755)  # rwxr-xr-x
+    systemd_env_file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(systemd_env_file_path, "wt") as f:
+        f.write(f"PYTHON_FILEPATH={python_path}\n")
+        f.write(f"PYTHON_ARGS=--config {args.config}\n")
 
     # systemd
 
@@ -50,7 +49,8 @@ def main():
 
     config["Unit"]["Description"] = "pollenJP Times Job"
     config["Service"]["WorkingDirectory"] = f"{proj_root_dir}"
-    config["Service"]["ExecStart"] = f"{shell_file_path}"
+    config["Service"]["EnvironmentFile"] = f"{systemd_env_file_path}"
+    config["Service"]["ExecStart"] = f"{sys.executable} $PYTHON_FILEPATH $PYTHON_ARGS"
     config["Service"]["Restart"] = "always"
     config["Install"]["WantedBy"] = "default.target"
 
