@@ -41,19 +41,21 @@ class TimesCallback(SlackCallbackBase):
         message: Dict[str, Any] = kwargs["message"]
         say: Say = kwargs["say"]
 
-        subtype = message.get("subtype", None)
-
         logger.info(f"{event=}")
 
-        if subtype is None:  # if a person
-            self.message_event_none(event, message, say)
-        else:
-            logger.warning(f"event_message's subtype is not None: {subtype=}")
-
-    def message_event_none(self, event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
-        if event["channel"] != self.src_channel_id or event["user"] != self.src_user_id:
+        if self.__should_be_filtered(event=event, message=message):
             return
 
+        self.message_event_none(event, message, say)
+
+    def __should_be_filtered(self, event: Dict[str, Any], message: Dict[str, Any]) -> bool:
+        if message.get("subtype") is not None:  # not a person
+            return True
+        if event["channel"] != self.src_channel_id or event["user"] != self.src_user_id:
+            return False
+        return True
+
+    def message_event_none(self, event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
         message_ts: Optional[str] = message.get("ts")
         if message_ts is None:
             raise RuntimeError(f"message_ts is not found: {message=}")
@@ -90,6 +92,10 @@ class TimesCallback(SlackCallbackBase):
         channel_id: str
         message_ts: str
         channel_id, message_ts = body["actions"][0]["value"].split("/")
+
+        if self.src_channel_id != channel_id:
+            return
+
         message: Dict[str, Any] = get_a_conversation(app=self.slack_app, channel_id=channel_id, ts=message_ts)
         logger.info(f"{message=}")
 
