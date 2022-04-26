@@ -67,7 +67,7 @@ def main():
                 ],
                 slack_app=times_app_host,
             )
-            for channels_conf in conf.times_app.times_callback.channels
+            for channels_conf in conf.times_app.times_callback
         ]
         + [
             TwitterCallback(
@@ -85,7 +85,7 @@ def main():
                 ],
                 slack_app=times_app_host,
             )
-            for channels_conf in conf.times_app.twitter_callback.channels
+            for channels_conf in conf.times_app.twitter_callback
         ]
     )
 
