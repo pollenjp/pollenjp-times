@@ -52,8 +52,8 @@ class TimesCallback(SlackCallbackBase):
         if message.get("subtype") is not None:  # not a person
             return True
         if event["channel"] != self.src_channel_id or event["user"] != self.src_user_id:
-            return False
-        return True
+            return True
+        return False
 
     def message_event_none(self, event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
         message_ts: Optional[str] = message.get("ts")
