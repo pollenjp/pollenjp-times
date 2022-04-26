@@ -4,8 +4,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Sequence
-from typing import Union
 
 # Third Party Library
 import discord
@@ -13,7 +11,6 @@ from slack_bolt.context.say.say import Say
 
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
-from pollenjp_times.utils import convert_slack_urls_to_discord
 
 # Local Library
 from .base import SlackCallbackBase
@@ -26,12 +23,14 @@ class TimesCallback(SlackCallbackBase):
         self,
         *args: Any,
         src_channel_id: str,
+        src_user_id: str,
         tgt_clients: List[SlackClientAppModel],
         discord_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.src_channel_id: str = src_channel_id
+        self.src_user_id: str = src_user_id
         self.slack_clients: List[SlackClientAppModel] = tgt_clients
         self.discord_webhook_clients: List[discord.webhook.sync.SyncWebhook] = discord_webhook_clients or []
 
@@ -50,7 +49,7 @@ class TimesCallback(SlackCallbackBase):
             logger.warning(f"event_message's subtype is not None: {subtype=}")
 
     def message_event_none(self, event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
-        if event["channel"] != self.src_channel_id:
+        if event["channel"] != self.src_channel_id or event["user"] != self.src_user_id:
             return
 
         message_ts: Optional[str] = message.get("ts")
