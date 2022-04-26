@@ -93,7 +93,6 @@ def main():
     def action_transfer_send_button(ack, body):
         ack()
         logger.info(f"{body=}")
-        # TODO: send to all times
         callbacks.action_transfer_send_button(body=body)
         client: WebhookClient = WebhookClient(url=body["response_url"])
         client.send(delete_original=True)
