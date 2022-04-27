@@ -7,6 +7,7 @@
 - [ToC](#toc)
 - [How to use](#how-to-use)
 - [How to run](#how-to-run)
+  - [requirements](#requirements)
   - [config](#config)
   - [systemd](#systemd)
     - [TimesCallback](#timescallback)
@@ -28,6 +29,12 @@
 | No| Botメッセージ削除 |
 
 ## How to run
+
+### requirements
+
+```sh
+poetry install
+```
 
 ### config
 
