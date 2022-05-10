@@ -1,7 +1,6 @@
 # Standard Library
 import argparse
 import configparser
-import os
 import sys
 from pathlib import Path
 
@@ -21,12 +20,15 @@ def parse_args() -> argparse.Namespace:
 
 def main():
     args = parse_args()
-    config_filename: str = f"{args.name}.service"
-    python_path: Path = Path(__file__).parent / "src" / "main.py"
-    systemd_env_file_path: Path = Path(__file__).parent / "systemd_env" / f"{args.name}.env"
-    target_systemd_conf_path: Path = Path("~").expanduser() / ".config" / "systemd" / "user" / config_filename
 
-    # shell script
+    python_path: Path = Path(__file__).parent / "src" / "main.py"
+    target_systemd_conf_path: Path = Path("~").expanduser() / ".config" / "systemd" / "user" / f"{args.name}.service"
+    systemd_env_file_path: Path = target_systemd_conf_path.parent / f"{args.name}.env"
+
+    proj_root_dir: Path = Path(__file__).parent
+    assert proj_root_dir.samefile(Path.cwd()), f"Run in project root directory: {proj_root_dir}"
+
+    # env vars file
 
     systemd_env_file_path.parent.mkdir(parents=True, exist_ok=True)
     with open(systemd_env_file_path, "wt") as f:
@@ -34,9 +36,6 @@ def main():
         f.write(f"PYTHON_ARGS=--config {args.config}\n")
 
     # systemd
-
-    proj_root_dir: Path = Path(__file__).parent
-    assert proj_root_dir.samefile(Path.cwd()), f"Run in project root directory: {proj_root_dir}"
 
     target_systemd_conf_path.parent.mkdir(parents=True, exist_ok=True)
 
