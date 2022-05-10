@@ -66,7 +66,7 @@ def convert_text_slack2discord(text: str) -> str:
 
     text = re.sub(r"<@(\S+?)>", r"`@ \1`", text)  # user mention
     text = re.sub(r"<#(\S+?)\|(\S+?)>", r"`#\1`", text)  # channel mention
-    text = re.sub(r"<(\S+?)\|(\S+?)>", r" \1 ", text)  # url with label
+    text = re.sub(r"<(\S+?)\|(\S+?)>", r" [\2](\1) ", text)  # url with label
     text = re.sub(r"<(\S+?)>", r" \1 ", text)  # url
 
     return text
