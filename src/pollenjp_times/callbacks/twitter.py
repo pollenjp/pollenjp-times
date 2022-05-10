@@ -69,11 +69,6 @@ class TwitterCallback(SlackCallbackBase):
                 icon_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
             )
 
-        # replace escape characters
-        message_txt = message_txt.replace("&amp", "&")
-        message_txt = message_txt.replace("&lt;", "<")
-        message_txt = message_txt.replace("&gt;", ">")
-
         content_list: List[str] = [
             f"{convert_slack_urls_to_discord(message_txt)}",
         ]

@@ -52,10 +52,15 @@ def convert_slack_urls_to_discord(text: str) -> str:
             "`@ U123456`\n`#hoge-ch`\nへー\n https://example.com \n https://example.com "
     """
 
-    text = re.sub(r"<@(\S+?)>", r"`@ \1`", text)
-    text = re.sub(r"<#(\S+?)\|(\S+?)>", r"`#\1`", text)
-    text = re.sub(r"<(\S+?)\|(\S+?)>", r" \1 ", text)
-    text = re.sub(r"<(\S+?)>", r" \1 ", text)
+    # replace escape characters
+    text = text.replace("&amp", "&")
+    text = text.replace("&lt;", "<")
+    text = text.replace("&gt;", ">")
+
+    text = re.sub(r"<@(\S+?)>", r"`@ \1`", text)  # user mention
+    text = re.sub(r"<#(\S+?)\|(\S+?)>", r"`#\1`", text)  # channel mention
+    text = re.sub(r"<(\S+?)\|(\S+?)>", r" \1 ", text)  # url with label
+    text = re.sub(r"<(\S+?)>", r" \1 ", text)  # url
 
     return text
 
