@@ -13,7 +13,7 @@ from slack_bolt.context.say.say import Say
 
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
-from pollenjp_times.utils.slack import convert_slack_urls_to_discord
+from pollenjp_times.utils.slack import convert_text_slack2discord
 
 # Local Library
 from .base import SlackCallbackBase
@@ -70,13 +70,13 @@ class TwitterCallback(SlackCallbackBase):
             )
 
         content_list: List[str] = [
-            f"{convert_slack_urls_to_discord(message_txt)}",
+            f"{convert_text_slack2discord(message_txt)}",
         ]
 
         # get 0th attachment's text
         if attachments is not None and len(attachments) > 0:
             content_list += [
-                f"{convert_slack_urls_to_discord(attachments[0]['text'])}",
+                f"{convert_text_slack2discord(attachments[0]['text'])}",
             ]
 
         logger.info(f"{content_list}")

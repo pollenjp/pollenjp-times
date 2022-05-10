@@ -41,7 +41,7 @@ def extract_slack_urls(text: str) -> List[str]:
     return urls
 
 
-def convert_slack_urls_to_discord(text: str) -> str:
+def convert_text_slack2discord(text: str) -> str:
     """
     extract urls from slack message text
 

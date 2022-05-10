@@ -11,7 +11,7 @@ from slack_bolt.context.say.say import Say
 
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
-from pollenjp_times.utils.slack import convert_slack_urls_to_discord
+from pollenjp_times.utils.slack import convert_text_slack2discord
 from pollenjp_times.utils.slack import get_a_conversation
 
 # Local Library
@@ -115,7 +115,7 @@ class TimesCallback(SlackCallbackBase):
             )
 
         content_list: List[str] = [
-            f"{convert_slack_urls_to_discord(message_txt)}",
+            f"{convert_text_slack2discord(message_txt)}",
         ]
 
         logger.info(f"{content_list}")
