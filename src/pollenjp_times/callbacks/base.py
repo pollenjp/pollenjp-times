@@ -1,4 +1,5 @@
 # Standard Library
+from logging import NullHandler
 from logging import getLogger
 from typing import Any
 from typing import Dict
@@ -8,6 +9,7 @@ from typing import List
 from slack_bolt import App  # type: ignore
 
 logger = getLogger(__name__)
+logger.addHandler(NullHandler())
 
 
 class SlackCallbackBase:

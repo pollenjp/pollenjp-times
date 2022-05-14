@@ -1,4 +1,5 @@
 # Standard Library
+from logging import NullHandler
 from logging import getLogger
 from typing import Any
 from typing import Dict
@@ -18,6 +19,7 @@ from pollenjp_times.utils.slack import get_a_conversation
 from .base import SlackCallbackBase
 
 logger = getLogger(__name__)
+logger.addHandler(NullHandler())
 
 
 class TimesCallback(SlackCallbackBase):

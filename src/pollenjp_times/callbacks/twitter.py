@@ -1,4 +1,5 @@
 # Standard Library
+from logging import NullHandler
 from logging import getLogger
 from typing import Any
 from typing import Dict
@@ -19,6 +20,7 @@ from pollenjp_times.utils.slack import convert_text_slack2discord
 from .base import SlackCallbackBase
 
 logger = getLogger(__name__)
+logger.addHandler(NullHandler())
 
 
 class TwitterCallback(SlackCallbackBase):

@@ -1,6 +1,7 @@
 # Standard Library
 import datetime
 import re
+from logging import NullHandler
 from logging import getLogger
 from typing import Any
 from typing import Dict
@@ -19,6 +20,7 @@ from pollenjp_times.types import ConversationsModel
 from pollenjp_times.types import UserModel
 
 logger = getLogger(__name__)
+logger.addHandler(NullHandler())
 
 
 def extract_slack_urls(text: str) -> List[str]:
