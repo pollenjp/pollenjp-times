@@ -27,7 +27,7 @@ class Callbacks:
             try:
                 func = getattr(c, function_name)
             except AttributeError as e:
-                logger.debug(f"{e=}")
+                logger.debug(f"{e=}", exc_info=True)
             else:
                 func(**kwargs)
 
