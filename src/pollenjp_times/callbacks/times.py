@@ -8,18 +8,30 @@ from typing import Optional
 
 # Third Party Library
 import discord
+from pydantic import BaseModel
 from slack_bolt.context.say.say import Say
 
 # First Party Library
 from pollenjp_times.types import SlackClientAppModel
+from pollenjp_times.types import UserModel
 from pollenjp_times.utils.slack import convert_text_slack2discord
+from pollenjp_times.utils.slack import decode_text2dict
+from pollenjp_times.utils.slack import encode_dict2text
 from pollenjp_times.utils.slack import get_a_conversation
+from pollenjp_times.utils.slack import get_user_data_from_user_id
 
 # Local Library
 from .base import SlackCallbackBase
 
 logger = getLogger(__name__)
 logger.addHandler(NullHandler())
+
+
+class ButtonValue(BaseModel):
+    channel_id: str
+    event_ts: Optional[str]
+    message_ts: Optional[str]
+    thread_ts: Optional[str] = None
 
 
 class TimesCallback(SlackCallbackBase):
@@ -45,22 +57,30 @@ class TimesCallback(SlackCallbackBase):
 
         logger.info(f"{event=}")
 
-        if self.__should_be_filtered(event=event, message=message):
+        if not self.__is_target_message(event=event, message=message):
             return
 
         self.message_event_none(event, message, say)
 
-    def __should_be_filtered(self, event: Dict[str, Any], message: Dict[str, Any]) -> bool:
-        if message.get("subtype") is not None:  # not a person
-            return True
-        if event["channel"] != self.src_channel_id or event["user"] != self.src_user_id:
-            return True
-        return False
+    def __is_target_message(self, event: Dict[str, Any], message: Dict[str, Any]) -> bool:
+        user_id: str = message["user"]
+        if event["channel"] != self.src_channel_id or user_id != self.src_user_id:
+            return False
+        user: UserModel = get_user_data_from_user_id(app=self.slack_app, user_id=user_id)
+        logger.info(f"{user=}")
+        if user.is_bot:
+            return False
+        return True
 
     def message_event_none(self, event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
         message_ts: Optional[str] = message.get("ts")
         if message_ts is None:
             raise RuntimeError(f"message_ts is not found: {message=}")
+
+        button_value = ButtonValue(channel_id=self.src_channel_id, message_ts=message_ts, event_ts=message_ts)
+        subtype: str
+        if message.get("thread_ts") is not None:
+            button_value.thread_ts = message["thread_ts"]
 
         self.slack_app.client.chat_postEphemeral(
             channel=self.src_channel_id,
@@ -74,7 +94,7 @@ class TimesCallback(SlackCallbackBase):
                             "type": "button",
                             "text": {"type": "plain_text", "text": "Send"},
                             "style": "primary",
-                            "value": f"{self.src_channel_id}/{message_ts}",  # '/' is separater
+                            "value": encode_dict2text(button_value.dict(exclude_none=True)),
                             "action_id": "action_transfer_send_button",
                         },
                         {
@@ -87,18 +107,22 @@ class TimesCallback(SlackCallbackBase):
                     ],
                 }
             ],
-            user=event["user"],
+            user=message["user"],
         )
 
     def action_transfer_send_button(self, body: Dict[str, Any]) -> None:
-        channel_id: str
-        message_ts: str
-        channel_id, message_ts = body["actions"][0]["value"].split("/")
+        recieve_info: List[str, str] = decode_text2dict(body["actions"][0]["value"])
+        button_value: ButtonValue = ButtonValue(**recieve_info)
 
-        if self.src_channel_id != channel_id:
+        if self.src_channel_id != button_value.channel_id:
             return
 
-        message: Dict[str, Any] = get_a_conversation(app=self.slack_app, channel_id=channel_id, ts=message_ts)
+        message: Dict[str, Any] = get_a_conversation(
+            app=self.slack_app,
+            channel_id=button_value.channel_id,
+            ts=button_value.message_ts,
+            is_reply=True if button_value.thread_ts is not None else False,
+        )
         logger.info(f"{message=}")
 
         message_txt: str = ""

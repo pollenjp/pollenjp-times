@@ -23,6 +23,16 @@ logger = getLogger(__name__)
 logger.addHandler(NullHandler())
 
 
+def encode_dict2text(d: Dict[Any, Any], values_separator: str = "/", key_val_separator: str = ":") -> str:
+    return f"{values_separator}".join([f"{key}{key_val_separator}{val}" for key, val in d.items()])
+
+
+def decode_text2dict(text: str, values_separator: str = "/", key_val_separator: str = ":") -> Dict[str, str]:
+    values: List[str] = text.split(values_separator)
+    key_val_list: List[List[str]] = [single_value.split(key_val_separator) for single_value in values]
+    return {key: val for (key, val) in key_val_list}
+
+
 def extract_slack_urls(text: str) -> List[str]:
     """
     extract urls from slack message text
@@ -251,15 +261,25 @@ def get_chat_permanent_link(app: App, channel_id: str, message_ts: str) -> str:
     return permanent_link
 
 
-def get_a_conversation(app: App, channel_id: str, ts: str) -> Dict[str, Any]:
+def get_a_conversation(app: App, channel_id: str, ts: str, is_reply: bool = False) -> Dict[str, Any]:
     # get conversation
-    conversation_res: SlackResponse = app.client.conversations_history(
-        channel=channel_id,
-        inclusive=True,
-        oldest=ts,
-        limit=1,
-    )
-    if conversation_res is None:
-        raise RuntimeError("conversation_res is None")
-    logger.debug(f"{conversation_res=}")
-    return conversation_res["messages"][0]  # type: ignore
+    response: SlackResponse
+    if not is_reply:
+        response = app.client.conversations_history(
+            channel=channel_id,
+            inclusive=True,
+            oldest=ts,
+            limit=1,
+        )
+    else:
+        response = app.client.conversations_replies(
+            channel=channel_id,
+            ts=ts,
+            inclusive=True,
+            oldest=ts,
+            limit=1,
+        )
+    if response is None or len(response["messages"]) == 0:
+        raise RuntimeError(f"conversation_res is empty: {response=}")
+    logger.debug(f"{response.data=}")
+    return response.data["messages"][0]  # type: ignore

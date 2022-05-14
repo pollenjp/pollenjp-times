@@ -29,11 +29,15 @@ class TwitterCallback(SlackCallbackBase):
         *args: Any,
         src_channel_id: str,
         tgt_clients: List[SlackClientAppModel],
+        sender_username: str,
+        sender_icon_url: str = None,
         discord_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.src_channel_id: str = src_channel_id
+        self.sender_username: str = sender_username
+        self.sender_icon_url: str = sender_icon_url
         self.slack_clients: List[SlackClientAppModel] = tgt_clients
         self.discord_webhook_clients: List[discord.webhook.sync.SyncWebhook] = discord_webhook_clients or []
 
