@@ -1,4 +1,5 @@
 # Standard Library
+from logging import NullHandler
 from logging import getLogger
 from typing import Any
 from typing import Dict
@@ -8,6 +9,7 @@ from typing import List
 from slack_bolt import App  # type: ignore
 
 logger = getLogger(__name__)
+logger.addHandler(NullHandler())
 
 
 class SlackCallbackBase:
@@ -25,7 +27,7 @@ class Callbacks:
             try:
                 func = getattr(c, function_name)
             except AttributeError as e:
-                logger.debug(f"{e=}")
+                logger.debug(f"{e=}", exc_info=True)
             else:
                 func(**kwargs)
 

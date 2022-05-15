@@ -1,5 +1,6 @@
 # Standard Library
 import argparse
+from logging import NullHandler
 from logging import getLogger
 from logging.config import dictConfig
 from pathlib import Path
@@ -21,13 +22,8 @@ from pollenjp_times.callbacks import TwitterCallback
 from pollenjp_times.callbacks.base import Callbacks
 from pollenjp_times.types import SlackClientAppModel
 
-filepath = Path(__file__).parents[1] / "config" / "logging.conf.yaml"
-with open(file=str(filepath), mode="rt") as f:
-    config_dict = yaml.safe_load(f)
-dictConfig(config=config_dict)
-del filepath, config_dict
-
 logger = getLogger(__name__)
+logger.addHandler(NullHandler())
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,6 +39,11 @@ def parse_args() -> argparse.Namespace:
 
 def main():
     args: argparse.Namespace = parse_args()
+
+    filepath = Path(__file__).parents[1] / "config" / "logging.conf.yaml"
+    with open(filepath, mode="rt") as f:
+        config_dict = yaml.safe_load(f)
+    dictConfig(config=config_dict)
 
     conf = OmegaConf.load(args.config)
     logger.info(f"{conf=}")
