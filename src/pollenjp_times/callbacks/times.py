@@ -111,7 +111,7 @@ class TimesCallback(SlackCallbackBase):
         )
 
     def action_transfer_send_button(self, body: Dict[str, Any]) -> None:
-        recieve_info: List[str, str] = decode_text2dict(body["actions"][0]["value"])
+        recieve_info: Dict[str, str] = decode_text2dict(body["actions"][0]["value"])
         button_value: ButtonValue = ButtonValue(**recieve_info)
 
         if self.src_channel_id != button_value.channel_id:

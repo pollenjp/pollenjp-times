@@ -11,7 +11,7 @@ from typing import Set
 from typing import Union
 
 # Third Party Library
-from slack_bolt import App
+from slack_bolt import App  # type: ignore # implicit reexport
 from slack_sdk.web.slack_response import SlackResponse
 
 # First Party Library
@@ -91,7 +91,7 @@ def get_channels(app: App) -> List[ChannelModel]:
         conversations_response: SlackResponse = app.client.conversations_list(cursor=cursor)
         conversations: ConversationsModel = ConversationsModel(
             **{
-                key: conversations_response.get(key)
+                key: conversations_response.get(key)  # type: ignore # Call to untyped function "get" in typed context
                 for key in ["ok", "channels", "response_metadata"]
                 if key in conversations_response
             },
@@ -114,7 +114,7 @@ def get_joined_channels(app: App) -> List[ChannelModel]:
         conversations_response: SlackResponse = app.client.users_conversations(cursor=cursor)
         conversations: ConversationsModel = ConversationsModel(
             **{
-                key: conversations_response.get(key)
+                key: conversations_response.get(key)  # type: ignore # Call to untyped function "get" in typed context
                 for key in ["ok", "channels", "response_metadata"]
                 if key in conversations_response
             },
@@ -130,7 +130,7 @@ def get_joined_channels(app: App) -> List[ChannelModel]:
     return channels
 
 
-def invite_existing_channels(app: App):
+def invite_existing_channels(app: App) -> None:
 
     channel: ChannelModel
 
@@ -172,7 +172,7 @@ def get_user_data_from_user_id(app: App, user_id: Optional[str]) -> UserModel:
         raise RuntimeError("user_id is None")
 
     user_info: SlackResponse = app.client.users_info(user=user_id)
-    user_data: Dict[str, Any] = user_info.get("user")
+    user_data: Dict[str, Any] = user_info.get("user")  # type: ignore # Call to untyped function "get" in typed context
     if user_data is None:
         raise RuntimeError("user_data is None")
     logger.debug(f"{user_data=}")
@@ -185,13 +185,13 @@ def get_user_data_from_user_id(app: App, user_id: Optional[str]) -> UserModel:
         "image_192",
         "image_512",
     ]
-    user_profile = user_data.get("profile")
     user_icon_url: str = ""
-    for image_name in image_tag_names:
-        if (url := user_profile.get(image_name)) is not None:
-            user_icon_url = url
-            break
-    name_common: str = user_profile.get("display_name") or user_profile.get("real_name")
+    if (user_profile := user_data.get("profile")) is not None:
+        for image_name in image_tag_names:
+            if (url := user_profile.get(image_name)) is not None:
+                user_icon_url = url
+                break
+    name_common: str = user_profile.get("display_name") or user_profile.get("real_name") or "No Name"
     user: UserModel = UserModel(
         id=user_id,
         name=user_data["name"],
@@ -208,7 +208,7 @@ def get_bot_data_from_bot_id(app: App, bot_id: Optional[str]) -> UserModel:
         raise RuntimeError("bot_id is None")
 
     bot_info: SlackResponse = app.client.bots_info(bot=bot_id)
-    bot_data: Dict[str, Any] = bot_info.get("bot")
+    bot_data: Dict[str, Any] = bot_info.get("bot")  # type: ignore # Call to untyped function "get" in typed context
     if bot_data is None:
         raise RuntimeError("bot_data is None")
 
@@ -244,7 +244,9 @@ def get_channel_from_channel_id(app: App, channel_id: Optional[str]) -> ChannelM
     if not channel_id:
         raise RuntimeError("channel_id is not found")
     channel_info: SlackResponse = app.client.conversations_info(channel=channel_id)
-    channel: ChannelModel = ChannelModel(**channel_info.get("channel"))
+    channel: ChannelModel = ChannelModel(
+        **channel_info.get("channel")  # type: ignore # Call to untyped function "get" in typed context
+    )
     logger.info(f"{channel=}")
     return channel
 
@@ -252,16 +254,16 @@ def get_channel_from_channel_id(app: App, channel_id: Optional[str]) -> ChannelM
 def get_chat_permanent_link(app: App, channel_id: str, message_ts: str) -> str:
     # get message's permanent link
     permanent_link_info: SlackResponse = app.client.chat_getPermalink(channel=channel_id, message_ts=message_ts)
-    if not permanent_link_info.get("ok"):
+    if not permanent_link_info.get("ok"):  # type: ignore # Call to untyped function "get" in typed context
         raise RuntimeError("permanent_link_info is not found")
-    permanent_link: Optional[str] = permanent_link_info.get("permalink")
+    permanent_link: Optional[str] = permanent_link_info.get("permalink")  # type: ignore
     if permanent_link is None:
         raise RuntimeError("permanent_link is not found")
     logger.info(f"{permanent_link=}")
     return permanent_link
 
 
-def get_a_conversation(app: App, channel_id: str, ts: str, is_reply: bool = False) -> Dict[str, Any]:
+def get_a_conversation(app: App, channel_id: str, ts: Optional[str] = None, is_reply: bool = False) -> Dict[str, Any]:
     # get conversation
     response: SlackResponse
     if not is_reply:
@@ -272,6 +274,8 @@ def get_a_conversation(app: App, channel_id: str, ts: str, is_reply: bool = Fals
             limit=1,
         )
     else:
+        if ts is None:
+            raise RuntimeError("ts is None")
         response = app.client.conversations_replies(
             channel=channel_id,
             ts=ts,
