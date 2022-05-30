@@ -1,4 +1,5 @@
 # Standard Library
+import re
 from logging import NullHandler
 from logging import getLogger
 from typing import Any
@@ -10,11 +11,15 @@ from typing import Union
 
 # Third Party Library
 import discord
+from discord.embeds import EmptyEmbed
 from slack_bolt.context.say.say import Say
 
 # First Party Library
+from pollenjp_times.types import MessageAttachmentModel
 from pollenjp_times.types import SlackClientAppModel
+from pollenjp_times.utils.slack import convert_slack_ts_to_datetime
 from pollenjp_times.utils.slack import convert_text_slack2discord
+from pollenjp_times.utils.slack import get_channel_from_channel_id
 
 # Local Library
 from .base import SlackCallbackBase
@@ -28,37 +33,58 @@ class TwitterCallback(SlackCallbackBase):
         self,
         *args: Any,
         src_channel_id: str,
-        tgt_clients: List[SlackClientAppModel],
+        tgt_clients: List[SlackClientAppModel] = None,
         discord_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
+        filter_keyword: str = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.src_channel_id: str = src_channel_id
-        self.slack_clients: List[SlackClientAppModel] = tgt_clients
+        self.slack_clients: List[SlackClientAppModel] = tgt_clients or []
         self.discord_webhook_clients: List[discord.webhook.sync.SyncWebhook] = discord_webhook_clients or []
+        self.filter_pattern = (
+            re.compile(
+                f"{filter_keyword}",
+                flags=re.IGNORECASE,
+            )
+            if filter_keyword is not None
+            else None
+        )
 
     def event_message(self, **kwargs: Any) -> None:
         event: Dict[str, Any] = kwargs["event"]
         message: Dict[str, Any] = kwargs["message"]
         say: Say = kwargs["say"]
 
-        subtype = message.get("subtype", None)
-
         logger.info(f"{event=}")
 
-        if subtype == "bot_message":  # if a bot
-            self.message_event_bot(event, message, say)
-        else:
-            logger.warning(f"event_message's subtype is not 'bot_message': {subtype=}")
+        self._event_message(event, message, say)
 
-    def message_event_bot(self, event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
+    def _event_message(self, event: Dict[str, Any], message: Dict[str, Any], say: Say) -> None:
         if event["channel"] != self.src_channel_id:
             return
 
-        message_txt: str = ""
-        if (txt := message.get("text", None)) is not None:
-            message_txt += txt
+        content_list: List[str] = []
+        if (message_txt := message.get("text", None)) is not None:
+            content_list.append(convert_text_slack2discord(message_txt))
+
         attachments: Optional[Sequence[Union[Dict[str, Any]]]] = message.get("attachments", None)
+        if attachments:
+            for attachment in attachments:
+                ms_attachment = MessageAttachmentModel(**attachment)
+                if len(ms_attachment.text) > 0:
+                    content_list.append(f"{ convert_text_slack2discord(ms_attachment.text).strip() }")
+                if len(ms_attachment.pretext) > 0:
+                    content_list.append(f"{ convert_text_slack2discord(ms_attachment.pretext).strip() }")
+
+        if self.filter_pattern is not None:
+            include_keyword: bool = False
+            for txt in content_list:
+                if self.filter_pattern.match(txt) is not None:
+                    include_keyword = True
+                    break
+            if not include_keyword:
+                return
 
         client_model: SlackClientAppModel
         for client_model in self.slack_clients:
@@ -71,23 +97,31 @@ class TwitterCallback(SlackCallbackBase):
                 icon_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
             )
 
-        content_list: List[str] = [
-            f"{convert_text_slack2discord(message_txt)}",
-        ]
-
-        # get 0th attachment's text
-        if attachments is not None and len(attachments) > 0:
-            content_list += [
-                f"{convert_text_slack2discord(attachments[0]['text'])}",
-            ]
-
-        logger.info(f"{content_list}")
-        discord_content: str = "\n".join(content_list)
-
-        discord_webhook_app: discord.webhook.sync.SyncWebhook
         for discord_webhook_app in self.discord_webhook_clients:
-            discord_webhook_app.send(
-                content=discord_content if len(discord_content) > 0 else "No text",
-                username="pollenJP",
-                avatar_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
-            )
+            discord_webhook_app.send(content="\n".join(content_list))
+
+        channel = get_channel_from_channel_id(self.slack_app, message.get("channel"))
+
+        embeds: List[discord.Embed] = []
+        if attachments:
+            for attachment in attachments:
+                ms_attachment = MessageAttachmentModel(**attachment)
+                embed = discord.Embed(
+                    description=ms_attachment.text,
+                    timestamp=convert_slack_ts_to_datetime(ms_attachment.ts) if ms_attachment.ts is not None else None,
+                )
+                embed.set_author(
+                    name=ms_attachment.author_name if ms_attachment.author_name is not None else EmptyEmbed,
+                    url=f"{ms_attachment.author_link}" if ms_attachment.author_link is not None else EmptyEmbed,
+                    icon_url=ms_attachment.author_icon if ms_attachment.author_icon is not None else EmptyEmbed,
+                )
+                embed.set_footer(
+                    text=f"{channel.name}",
+                    # icon_url=,
+                )
+                if ms_attachment.image_url is not None:
+                    embed.set_image(url=ms_attachment.image_url)
+                embeds.append(embed)
+
+            for discord_webhook_app in self.discord_webhook_clients:
+                discord_webhook_app.send(content="attachment", embeds=embeds)

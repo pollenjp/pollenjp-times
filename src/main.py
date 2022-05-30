@@ -72,8 +72,8 @@ class TimesCallbackConfig:
 @dataclass
 class TwitterCallbackConfig:
     host_channel_id: str
-    host_user_id: str
     clients: CallbackClientsConfig
+    filter_keyword: t.Optional[str] = None
 
 
 @dataclass
@@ -127,6 +127,7 @@ def main() -> None:
     callback_list += [
         TwitterCallback(
             src_channel_id=channels_conf.host_channel_id,
+            filter_keyword=channels_conf.filter_keyword,
             tgt_clients=[
                 SlackClientAppModel(
                     app=App(token=slack_clients_conf.bot_user_oauth_token),
@@ -167,6 +168,8 @@ def main() -> None:
             message=message,
             say=say,
         )
+
+    logger.info(f"{callback_list=}")
 
     SocketModeHandler(times_app_host, conf.times_app.host.app_level_token).start()  # type: ignore
 
