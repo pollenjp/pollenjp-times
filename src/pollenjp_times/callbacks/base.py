@@ -64,7 +64,7 @@ class SlackCallbackBase:
 
 
 class Callbacks:
-    def __init__(self, callbacks: List[SlackCallbackBase], error_sender: Optional[Sender] = None) -> None:
+    def __init__(self, callbacks: List[SlackCallbackBase], error_sender: t.Optional[Sender] = None) -> None:
         self.callbacks = callbacks
         self.error_sender = error_sender
 
