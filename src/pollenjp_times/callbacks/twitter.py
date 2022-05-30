@@ -11,6 +11,7 @@ from typing import Union
 
 # Third Party Library
 import discord
+from discord.embeds import Embed
 from discord.embeds import EmptyEmbed
 from slack_bolt.context.say.say import Say
 
@@ -33,9 +34,9 @@ class TwitterCallback(SlackCallbackBase):
         self,
         *args: Any,
         src_channel_id: str,
-        tgt_clients: List[SlackClientAppModel] = None,
+        tgt_clients: Optional[List[SlackClientAppModel]] = None,
         discord_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
-        filter_keyword: str = None,
+        filter_keyword: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -102,14 +103,16 @@ class TwitterCallback(SlackCallbackBase):
 
         channel = get_channel_from_channel_id(self.slack_app, message.get("channel"))
 
-        embeds: List[discord.Embed] = []
+        embeds: List[Embed] = []
         if attachments:
             for attachment in attachments:
                 ms_attachment = MessageAttachmentModel(**attachment)
-                embed = discord.Embed(
-                    description=ms_attachment.text,
-                    timestamp=convert_slack_ts_to_datetime(ms_attachment.ts) if ms_attachment.ts is not None else None,
-                )
+                if ms_attachment.ts is not None:
+                    embed = Embed(
+                        description=ms_attachment.text, timestamp=convert_slack_ts_to_datetime(ms_attachment.ts)
+                    )
+                else:
+                    embed = Embed(description=ms_attachment.text)
                 embed.set_author(
                     name=ms_attachment.author_name if ms_attachment.author_name is not None else EmptyEmbed,
                     url=f"{ms_attachment.author_link}" if ms_attachment.author_link is not None else EmptyEmbed,
