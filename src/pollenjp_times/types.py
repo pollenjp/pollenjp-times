@@ -58,6 +58,7 @@ class MessageAttachmentModel(BaseModel):
     image_url: Optional[str] = None
     fallback: str = ""
     text: str = ""
+    pretext: str = ""
     ts: Optional[float] = None
     author_icon: Optional[str] = None
     author_name: Optional[str] = None
