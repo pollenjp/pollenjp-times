@@ -21,6 +21,7 @@ from slack_sdk import WebhookClient  # type: ignore # implicit reexport disabled
 from pollenjp_times.callbacks import TimesCallback
 from pollenjp_times.callbacks import TwitterCallback
 from pollenjp_times.callbacks.base import Callbacks
+from pollenjp_times.callbacks.base import DiscordWebhookSender
 from pollenjp_times.callbacks.base import SlackCallbackBase
 from pollenjp_times.types import SlackClientAppModel
 
@@ -86,6 +87,7 @@ class TimesAppConfig:
 @dataclass
 class ConfigModel:
     times_app: TimesAppConfig
+    discord_webhook_sender: str
 
 
 def main() -> None:
@@ -143,7 +145,9 @@ def main() -> None:
         )
         for channels_conf in conf.times_app.twitter_callback
     ]
-    callbacks: Callbacks = Callbacks(callback_list)
+    callbacks: Callbacks = Callbacks(
+        callback_list, error_sender=DiscordWebhookSender(webhook_url=conf.discord_webhook_sender)
+    )
 
     @times_app_host.action("action_transfer_send_button")
     def action_transfer_send_button(ack: t.Callable[[], None], body: t.Dict[str, t.Any]) -> None:
