@@ -105,7 +105,7 @@ class TwitterCallback(SlackCallbackBase):
             )
 
         for discord_webhook_app in self.discord_webhook_clients:
-            discord_webhook_app.send(content="\n".join(content_list))
+            discord_webhook_app.send(content="@everyone " + "\n".join(content_list))
 
         channel = get_channel_from_channel_id(self.slack_app, message.get("channel"))
 
