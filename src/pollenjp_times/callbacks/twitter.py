@@ -58,6 +58,7 @@ class TwitterCallback(SlackCallbackBase):
         say: Say = kwargs["say"]
 
         logger.info(f"{event=}")
+        logger.info(f"{message=}")
 
         self._event_message(event, message, say)
 
@@ -69,14 +70,11 @@ class TwitterCallback(SlackCallbackBase):
         if (message_txt := message.get("text", None)) is not None:
             content_list.append(convert_text_slack2discord(message_txt))
 
-        attachments: Optional[Sequence[Union[Dict[str, Any]]]]
-        if event.get("subtype") is None:
-            attachments = message.get("attachments", None)
-        else:
-            try:
-                attachments = event["message"].get("attachments", None)
-            except KeyError as e:
-                logger.info(f"{e=}", exc_info=True)
+        attachments: Sequence[Union[Dict[str, Any]]] = []
+        if (_attachments := message.get("attachments")) is not None:
+            attachments += _attachments
+        if (_m := message.get("message")) is not None and (_attachments := _m.get("attachments")) is not None:
+            attachments += _attachments
         if attachments:
             for attachment in attachments:
                 ms_attachment = MessageAttachmentModel(**attachment)
