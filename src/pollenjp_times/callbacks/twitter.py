@@ -69,7 +69,14 @@ class TwitterCallback(SlackCallbackBase):
         if (message_txt := message.get("text", None)) is not None:
             content_list.append(convert_text_slack2discord(message_txt))
 
-        attachments: Optional[Sequence[Union[Dict[str, Any]]]] = message.get("attachments", None)
+        attachments: Optional[Sequence[Union[Dict[str, Any]]]]
+        if event.get("subtype") is None:
+            attachments = message.get("attachments", None)
+        else:
+            try:
+                attachments = event["message"].get("attachments", None)
+            except KeyError as e:
+                logger.info(f"{e=}", exc_info=True)
         if attachments:
             for attachment in attachments:
                 ms_attachment = MessageAttachmentModel(**attachment)
@@ -84,6 +91,7 @@ class TwitterCallback(SlackCallbackBase):
                 if self.filter_pattern.match(txt) is not None:
                     include_keyword = True
                     break
+                logger.info(f"Not matched: {txt=}")
             if not include_keyword:
                 return
 
