@@ -9,9 +9,6 @@
 - [How to run](#how-to-run)
   - [requirements](#requirements)
   - [config](#config)
-  - [systemd](#systemd)
-    - [TimesCallback](#timescallback)
-    - [TwitterCallback](#twittercallback)
 
 <!-- /TOC -->
 
@@ -38,39 +35,10 @@ poetry install
 
 ### config
 
-See `config/sample.yaml`
-
-### systemd
-
-```sh
-poetry run python3 generate_systemd_conf.py \
-    --name pollenjp_times_bot \
-    --config config/sample.yaml
-```
-
-#### TimesCallback
-
-- Create `config/times.yaml`.
-- Run the command as below.
+- `APP_CONFIG` : json format string
+  - `yq '.' "config/sample.yml" > "sample.json"`
+- `LOGGING_CONFIG` : json format string
 
 ```sh
-poetry run python3 generate_systemd_conf.py \
-    --name pollenjp_times_bot_times \
-    --config config/times.yaml
-systemctl --user start pollenjp_times_bot_times.service
-```
-
-#### TwitterCallback
-
-Slack Twitter Integration が設定されたチャンネルを指定し流れてきたツイートをすべて転送する.
-送信者の判定は bot しか判定していないため Twitter Integration App 以外の Bot メッセージにも反応してしまう.
-
-- Create `config/twitter.yaml`.
-- Run the command as below.
-
-```sh
-poetry run python3 generate_systemd_conf.py \
-    --name pollenjp_times_bot_twitter \
-    --config config/twitter.yaml
-systemctl --user start pollenjp_times_bot_twitter.service
+PYTHONPATH='src' poetry run python src/main.py
 ```

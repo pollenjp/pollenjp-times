@@ -1,5 +1,7 @@
 # Standard Library
 import argparse
+import json
+import os
 import typing as t
 from dataclasses import dataclass
 from dataclasses import field
@@ -27,17 +29,6 @@ from pollenjp_times.types import SlackClientAppModel
 
 logger = getLogger(__name__)
 logger.addHandler(NullHandler())
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="pollenjp times arguements")
-    parser.add_argument(
-        "--config",
-        type=lambda x: Path(x).expanduser(),
-        default=Path(__file__).parents[1] / "config" / "main.yaml",
-        help="config file path",
-    )
-    return parser.parse_args()
 
 
 def load_logging_conf(filepath: Path) -> None:
@@ -91,15 +82,19 @@ class ConfigModel:
 
 
 def main() -> None:
-    args: argparse.Namespace = parse_args()
 
-    load_logging_conf(Path(__file__).parents[1] / "config" / "logging.conf.yaml")
+    if (conf_str := os.environ.get("LOGGING_CONF")) is not None:
+        load_logging_conf(Path(__file__).parents[1] / "config" / "logging.conf.yaml")
+        dictConfig(json.loads(conf_str))
+
+    if (conf_str := os.environ.get("APP_CONFIG")) is None:
+        raise ValueError("'APP_CONFIG' environment variable is not set")
 
     conf: ConfigModel = t.cast(
         ConfigModel,
         OmegaConf.merge(
             OmegaConf.structured(ConfigModel),
-            OmegaConf.load(args.config),
+            OmegaConf.create(json.loads(os.environ["APP_CONFIG"])),
         ),
     )
     logger.info(f"{conf=}")
