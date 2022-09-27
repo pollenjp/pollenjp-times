@@ -1,5 +1,4 @@
 # Standard Library
-import argparse
 import json
 import os
 import typing as t
@@ -51,6 +50,7 @@ class TimesCallbackSlackClientsConfig:
 @dataclass
 class CallbackClientsConfig:
     slack: t.List[TimesCallbackSlackClientsConfig] = field(default_factory=list)
+    slack_webhooks: t.List[str] = field(default_factory=list)  # webhook url
     discord: t.List[str] = field(default_factory=list)  # webhook url
 
 
@@ -113,6 +113,7 @@ def main() -> None:
                 )
                 for slack_clients_conf in channels_conf.clients.slack
             ],
+            slack_webhook_clients=channels_conf.clients.slack_webhooks,
             discord_webhook_clients=[
                 discord.webhook.sync.SyncWebhook.from_url(discord_webhook_url)
                 for discord_webhook_url in channels_conf.clients.discord

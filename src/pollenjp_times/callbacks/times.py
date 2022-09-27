@@ -8,6 +8,7 @@ from typing import Optional
 
 # Third Party Library
 import discord
+import requests
 from pydantic import BaseModel
 from slack_bolt.context.say.say import Say
 
@@ -41,6 +42,7 @@ class TimesCallback(SlackCallbackBase):
         src_channel_id: str,
         src_user_id: str,
         tgt_clients: List[SlackClientAppModel],
+        slack_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
         discord_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
         **kwargs: Any,
     ) -> None:
@@ -48,6 +50,7 @@ class TimesCallback(SlackCallbackBase):
         self.src_channel_id: str = src_channel_id
         self.src_user_id: str = src_user_id
         self.slack_clients: List[SlackClientAppModel] = tgt_clients
+        self.slack_webhook_clients: List[str] = slack_webhook_clients or []
         self.discord_webhook_clients: List[discord.webhook.sync.SyncWebhook] = discord_webhook_clients or []
 
     def event_message(self, **kwargs: Any) -> None:
@@ -145,6 +148,17 @@ class TimesCallback(SlackCallbackBase):
         ]
 
         logger.info(f"{content_list}")
+
+        for webhook_url in self.slack_webhook_clients:
+            requests.post(
+                webhook_url,
+                headers={
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "text": "\n".join(content_list),
+                },
+            )
 
         discord_webhook_app: discord.webhook.sync.SyncWebhook
         for discord_webhook_app in self.discord_webhook_clients:
