@@ -143,12 +143,6 @@ class TimesCallback(SlackCallbackBase):
                 icon_url="https://i.gyazo.com/4d3a544918c1bebb5c02f37c7789f765.jpg",
             )
 
-        content_list: List[str] = [
-            f"{convert_text_slack2discord(message_txt)}",
-        ]
-
-        logger.info(f"{content_list}")
-
         for webhook_url in self.slack_webhook_clients:
             requests.post(
                 webhook_url,
@@ -156,9 +150,15 @@ class TimesCallback(SlackCallbackBase):
                     "Content-Type": "application/json",
                 },
                 json={
-                    "text": "\n".join(content_list),
+                    "text": message_txt,
                 },
             )
+
+        content_list: List[str] = [
+            f"{convert_text_slack2discord(message_txt)}",
+        ]
+
+        logger.info(f"{content_list}")
 
         discord_webhook_app: discord.webhook.sync.SyncWebhook
         for discord_webhook_app in self.discord_webhook_clients:
