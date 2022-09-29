@@ -16,7 +16,7 @@ from omegaconf import OmegaConf
 from slack_bolt.adapter.socket_mode.builtin import SocketModeHandler
 from slack_bolt.app.app import App
 from slack_bolt.context.say.say import Say
-from slack_sdk import WebhookClient  # type: ignore # implicit reexport disabled
+from slack_sdk import WebhookClient
 
 # First Party Library
 from pollenjp_times.callbacks import TimesCallback

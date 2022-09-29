@@ -11,7 +11,7 @@ from typing import Set
 from typing import Union
 
 # Third Party Library
-from slack_bolt import App  # type: ignore # implicit reexport
+from slack_bolt import App
 from slack_sdk.web.slack_response import SlackResponse
 
 # First Party Library

@@ -42,7 +42,7 @@ class TimesCallback(SlackCallbackBase):
         src_channel_id: str,
         src_user_id: str,
         tgt_clients: List[SlackClientAppModel],
-        slack_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
+        slack_webhook_clients: Optional[List[str]] = None,
         discord_webhook_clients: Optional[List[discord.webhook.sync.SyncWebhook]] = None,
         **kwargs: Any,
     ) -> None:

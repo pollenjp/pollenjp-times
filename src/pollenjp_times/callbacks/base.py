@@ -7,7 +7,7 @@ from logging import getLogger
 
 # Third Party Library
 import discord
-from slack_bolt import App  # type: ignore
+from slack_bolt import App
 
 logger = getLogger(__name__)
 logger.addHandler(NullHandler())
@@ -20,7 +20,7 @@ class Sender:
 
 
 class DiscordWebhookSender(Sender):
-    def __init__(self, webhook_url: App) -> None:
+    def __init__(self, webhook_url: str) -> None:
         self.app: discord.webhook.sync.SyncWebhook = discord.webhook.sync.SyncWebhook.from_url(webhook_url)
 
     def send(self, text: str) -> None:
@@ -30,7 +30,7 @@ class DiscordWebhookSender(Sender):
 class SlackCallbackBase:
     def __init__(self, *args: t.Any, slack_app: App, **kwargs: t.Any) -> None:
         self.slack_app: App = slack_app
-        self.bot_id: str = self.slack_app.client.auth_test()["user_id"]
+        self.bot_id: str = t.cast(str, self.slack_app.client.auth_test()["user_id"])
 
     def event_message(self, **kwargs: t.Any) -> None:
         pass

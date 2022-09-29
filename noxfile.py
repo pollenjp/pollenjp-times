@@ -40,7 +40,7 @@ def install_package(session: Session, dev: bool = False) -> None:
             "requirements.txt",
             "--output",
             f"{requirements_txt_path}",
-        ] + (["--dev"] if dev else [])
+        ] + (["--with", "dev"] if dev else [])
         session.run(*cmd, external=True)
         session.install("-r", f"{requirements_txt_path}")
     except Exception as e:
@@ -53,7 +53,7 @@ def install_package(session: Session, dev: bool = False) -> None:
 def test(session: Session) -> None:
     env: Dict[str, str] = {}
     env.update(env_common)
-    kwargs: SessionKwargs = dict(env=env)
+    kwargs: SessionKwargs = {"env": env}
 
     install_package(session, dev=True)
     session.run("pytest", **kwargs)
@@ -63,7 +63,7 @@ def test(session: Session) -> None:
 def lint(session: Session) -> None:
     env: Dict[str, str] = {}
     env.update(env_common)
-    kwargs: SessionKwargs = dict(env=env)
+    kwargs: SessionKwargs = {"env": env}
 
     install_package(session, dev=True)
     session.run("flake8", "--statistics", "--count", "--show-source", *python_code_path_list, **kwargs)
@@ -77,7 +77,7 @@ def lint(session: Session) -> None:
 def format(session: Session) -> None:
     env: Dict[str, str] = {}
     env.update(env_common)
-    kwargs: SessionKwargs = dict(env=env, success_codes=[0, 1])
+    kwargs: SessionKwargs = {"env": env, "success_codes": [0, 1]}
 
     install_package(session, dev=True)
     session.run(

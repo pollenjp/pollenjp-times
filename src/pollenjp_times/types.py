@@ -6,7 +6,7 @@ from typing import Optional
 
 # Third Party Library
 from pydantic import BaseModel
-from slack_bolt import App  # type: ignore
+from slack_bolt import App
 
 
 class SlackClientAppModel(BaseModel):
