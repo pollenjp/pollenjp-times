@@ -66,7 +66,9 @@ class TimesCallback(SlackCallbackBase):
         self.message_event_none(event, message, say)
 
     def __is_target_message(self, event: Dict[str, Any], message: Dict[str, Any]) -> bool:
-        user_id: str = message["user"]
+        if (x := message.get("user")) is None or not isinstance(x, str):
+            return False
+        user_id: str = x
         if event["channel"] != self.src_channel_id or user_id != self.src_user_id:
             return False
         user: UserModel = get_user_data_from_user_id(app=self.slack_app, user_id=user_id)
