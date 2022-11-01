@@ -45,6 +45,9 @@ name = "pollenjp-times"
 version = "0.1.0"
 description = ""
 authors = ["pollenjp <polleninjp@gmail.com>"]
+packages = [
+    { include = "pollenjp_times", from = "src" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"

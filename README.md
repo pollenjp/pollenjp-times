@@ -40,5 +40,5 @@ poetry install
 - `LOGGING_CONFIG` : json format string
 
 ```sh
-PYTHONPATH='src' poetry run python src/main.py
+poetry run python src/main.py
 ```
